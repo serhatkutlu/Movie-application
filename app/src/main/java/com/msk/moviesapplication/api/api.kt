@@ -1,6 +1,6 @@
 package com.msk.moviesapplication.api
 
-import com.msk.moviesapplication.Responces.Data.Discover.movies
+import com.msk.moviesapplication.Responces.Data.Discover.Movies
 import com.msk.moviesapplication.Responces.Data.genre.genres
 import com.msk.moviesapplication.Util.Sorting_Value
 import kotlinx.coroutines.flow.Flow
@@ -11,11 +11,13 @@ interface api {
 
     @GET("discover/movie")
     suspend fun getDiscoverMovie(
-        @Query("sort_by")
-        sort_by:String=Sorting_Value.POPULARITY.value,
+        @Query("page")
+        page:Int=1  ,
         @Query("with_genres")
-        genres:String?
-    ):movies
+        genreId: String?=null,
+        @Query("sort_by")
+        sort_by:String?=null
+    ): Movies
 
     @GET("genre/movie/list")
     suspend fun getGenre():genres

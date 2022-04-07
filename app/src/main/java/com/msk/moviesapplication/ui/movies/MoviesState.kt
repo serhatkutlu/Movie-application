@@ -1,12 +1,12 @@
 package com.msk.moviesapplication.ui.movies
 
-import com.msk.moviesapplication.Responces.Data.Discover.movies
-import com.msk.moviesapplication.Responces.Data.genre.Genre
-import com.msk.moviesapplication.Util.Sorting_Value
+import com.msk.moviesapplication.Responces.Data.Discover.Movies
+import com.msk.moviesapplication.Util.Sorting_data
 
 data class MoviesState(
-    val movies:movies? =null,
-    val sorting:Sorting_Value=Sorting_Value.POPULARITY,
-    val genre:Genre?=null,
-    var isOrderSectionVisible:Boolean=false
+    var movies:Movies? =null,
+    var SortingData:Sorting_data,
+    var isOrderSectionVisible:Boolean=false,
+    var isLoading:Boolean=false,
+    var endReached:Boolean=false
 )

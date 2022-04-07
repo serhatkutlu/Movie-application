@@ -1,6 +1,7 @@
 package com.msk.moviesapplication.Util
 
 import com.msk.moviesapplication.Responces.Data.genre.Genre
+import com.msk.moviesapplication.Responces.Data.genre.genres
 
 sealed class Sorting_Value(val value:String){
     object POPULARITY:Sorting_Value("popularity.desc")
@@ -10,3 +11,16 @@ sealed class Sorting_Value(val value:String){
     object VOTE_AVARAGE:Sorting_Value("vote_average.desc")
     object VOTE_COUNT:Sorting_Value("vote_count.desc")
 }
+
+
+data class Sorting_data(
+    val Sorting_value:Sorting_Value,
+    val Genre:genres
+){
+    fun GenreToString():String{
+        if (Genre.genres.isNotEmpty()) return Genre.genres.joinToString { "," }
+        else return ""
+    }
+}
+
+
