@@ -30,14 +30,15 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
 
     //private val _SortingState:MutableState<Sorting_data> = mutableStateOf(Sorting_data(Sorting_Value.POPULARITY,genres(listOf())))
 
-    val SortingFlow:MutableStateFlow<Sorting_data> = MutableStateFlow(Sorting_data(Sorting_Value.POPULARITY,genres(listOf())))
+    private val _SortingData:MutableStateFlow<Sorting_data> = MutableStateFlow(Sorting_data(Sorting_Value.POPULARITY,genres(listOf())))
+    val SortingData:StateFlow<Sorting_data> = _SortingData
 
-    private val _MoviesState= mutableStateOf(MoviesState(SortingData = Sorting_data(Sorting_Value.POPULARITY,genres(listOf()))))
+    private val _MoviesState= mutableStateOf(MoviesState())
     val MoviesState:State<MoviesState> =_MoviesState
 
     //val isPaginationLoading:MutableState<Boolean> = mutableStateOf(false)
 
-    var Genres:genres?=null
+    val Genres:MutableState<genres> = mutableStateOf(genres(listOf()))
 
     private var getMovieJob : Job? =null
     private var getGenreJob : Job? =null
@@ -49,7 +50,7 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
         },
         onRequest = { nextPage ->
 
-            GetMovies(sortingValue = MoviesState.value.SortingData,nextPage)
+            GetMovies(sortingValue = SortingData.value,nextPage)
             nextPage+1
         }
 
@@ -58,28 +59,29 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
 
     init {
         GetGenre()
-        loadNextItems()
     }
 
-    fun loadNextItems() {
-        viewModelScope.launch {
-            paginator.loadNextItems()
-        }
-    }
+
 
 
     fun OnEvent(MoviesEvent:MoviesEvent){
         when(MoviesEvent){
             is MoviesEvent.OrderSection->{
-                if (MoviesState.value.SortingData.Sorting_value==MoviesEvent.sortingData.Sorting_value&&MoviesState.value.SortingData.Genre.genres==MoviesEvent.sortingData.Genre.genres){
-
+                if (SortingData.value.Sorting_value==MoviesEvent.sortingData.Sorting_value&&SortingData.value.Genre.genres==MoviesEvent.sortingData.Genre.genres){
+                    return
                 }
+                _SortingData.value=SortingData.value.copy(Sorting_value = MoviesEvent.sortingData.Sorting_value)
+
+
             }
             is MoviesEvent.ToggleOrderSection->{
-                _MoviesState.value.isOrderSectionVisible=!MoviesState.value.isOrderSectionVisible
+                _MoviesState.value=MoviesState.value.copy(isOrderSectionVisible = !MoviesState.value.isOrderSectionVisible)
             }
             is MoviesEvent.openDetailScreen->{
 
+            }
+            is MoviesEvent.LoadNextPage->{
+                loadNextItems()
             }
         }
     }
@@ -102,7 +104,7 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
         getGenreJob?.cancel()
 
         getGenreJob=MovieRepository.getGenres().onEach {
-            Genres=it
+            Genres.value=it
         }.launchIn(viewModelScope)
     }
 
@@ -110,4 +112,9 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
         paginator.reset()
     }
 
+    private fun loadNextItems() {
+        viewModelScope.launch {
+            paginator.loadNextItems()
+        }
+    }
 }

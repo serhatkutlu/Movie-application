@@ -1,26 +1,29 @@
 package com.msk.moviesapplication.ui.movies
 
 import android.annotation.SuppressLint
+import android.text.style.ParagraphStyle
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
+import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextGeometricTransform
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,9 +33,11 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import com.msk.moviesapplication.Responces.Data.Discover.Result
 import coil.compose.rememberImagePainter
+import com.msk.moviesapplication.Util.Sorting_Value
+import com.msk.moviesapplication.Util.Sorting_data
 import com.msk.moviesapplication.Util.addbaseUrl
 import com.msk.moviesapplication.ui.theme.MoviesApplicationTheme
-
+//Divider
 @Composable
 fun MoviesScreen(
     navController: NavController,
@@ -42,27 +47,118 @@ fun MoviesScreen(
     val MoviesViewModel= hiltViewModel<MoviesViewModel>()
     val moviesState=MoviesViewModel.MoviesState
     val state= rememberLazyListState()
-    LaunchedEffect(Unit){
-        MoviesViewModel.SortingFlow.collect{
-            state.scrollToItem(0)
+    val Sorting_data=MoviesViewModel.SortingData.collectAsState()
 
-            //MoviesViewModel.resetPagination()
-        }
 
-    }
+
+   LaunchedEffect(Unit){
+       MoviesViewModel.SortingData.collect{
+           state.scrollToItem(0)
+           MoviesViewModel.resetPagination()
+           MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
+       }
+   }
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {Surface(Modifier.fillMaxWidth().wrapContentHeight()) {
             AppBar(ThemeColor)
         }}
-        , content = { Gridcontent(state,moviesState,navController,MoviesViewModel) }
+        , content = { mainContent(state,moviesState,navController,MoviesViewModel,Sorting_data)
+        }
     )
 
 }
 @Composable
+fun mainContent(
+    state: LazyListState,
+    moviesState: State<MoviesState>,
+    navController: NavController,
+    MoviesViewModel: MoviesViewModel,
+    SortingData:State<Sorting_data>,
+    orderSectionClick:()->Unit={MoviesViewModel.OnEvent(MoviesEvent.ToggleOrderSection)}
+) {
+    Column{
+
+        Box(Modifier.fillMaxWidth()){
+            IconButton(modifier = Modifier.size(40.dp).fillMaxWidth().align(Alignment.CenterEnd), onClick =orderSectionClick){
+                Icon(Icons.Default.Sort,contentDescription = "Sort", modifier = Modifier.size(30.dp))
+            }
+        }
+            OrderSection(moviesState,MoviesViewModel,SortingData)
+
+
+        Gridcontent(state,moviesState,navController,MoviesViewModel)
+    }
+
+
+
+}
+@OptIn(ExperimentalFoundationApi::class, androidx.compose.material.ExperimentalMaterialApi::class)
+@Composable
+private fun OrderSection(
+    moviesState: State<MoviesState>,
+    MoviesViewModel: MoviesViewModel,
+    SortingData: State<Sorting_data>
+) {
+    AnimatedVisibility(
+        visible = moviesState.value.isOrderSectionVisible,
+        enter = fadeIn() + slideInVertically(),
+        exit = fadeOut()+ slideOutVertically())
+    {
+        val genres= remember { MoviesViewModel.Genres }
+        Column() {
+
+            Column {
+                Text("Sort By", style = MaterialTheme.typography.h5, modifier = Modifier.align(
+                    Alignment.CenterHorizontally))
+                Row {
+                    DefaulthRadioButton("POPULARITY", selected =SortingData.value.Sorting_value is Sorting_Value.POPULARITY, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.POPULARITY)))} )
+                    DefaulthRadioButton("RELEASE", selected =SortingData.value.Sorting_value is Sorting_Value.RELEASE, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.RELEASE)))} )
+                    DefaulthRadioButton("REVENUE", selected =SortingData.value.Sorting_value is Sorting_Value.REVENUE, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.REVENUE)))} )
+                }
+                Row {
+                    DefaulthRadioButton("ALPHABETICALLY", selected =SortingData.value.Sorting_value is Sorting_Value.ALPHABETICALLY, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.ALPHABETICALLY)))} )
+                    DefaulthRadioButton("VOTE AVARAGE", selected =SortingData.value.Sorting_value is Sorting_Value.VOTE_AVARAGE, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.VOTE_AVARAGE)))} )
+                }
+                Row {
+                    DefaulthRadioButton("VOTE COUNT", selected =SortingData.value.Sorting_value is Sorting_Value.VOTE_COUNT, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.VOTE_COUNT)))} )
+                }
+                Divider()
+
+                if (genres.value.genres.isNotEmpty()){
+                    LazyVerticalGrid(
+                        cells = GridCells.Adaptive(130.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
+                    ){
+                        items(genres.value.genres) {
+                            Card (shape = RoundedCornerShape(10.dp), onClick = {}, modifier = Modifier.fillMaxSize(), border = BorderStroke(1.dp, Color.DarkGray)){
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)){
+                                    Text(text = it.name, textAlign = TextAlign.Center)
+
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+
+
+            }
+
+        }
+
+
+
+    }
+
+}
+@Composable
 private fun AppBar( ThemeColor: MutableState<Boolean>) {
-    val colorPrimary = if (ThemeColor.value) Color.Black else Color.White
+    val colorPrimary = if (ThemeColor.value) Color.Black else Color.Red
     val colorSecondary = if (ThemeColor.value) Color.White else Color.Black
+    val colorThird = if (ThemeColor.value) Color.Red else Color.White
 
     Row(Modifier.background(colorPrimary).fillMaxWidth().height(50.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween)
@@ -70,7 +166,7 @@ private fun AppBar( ThemeColor: MutableState<Boolean>) {
         Box(){
 
         }
-        Text(text = "Movies", color = Color.Red, style =MaterialTheme.typography.h4)
+        Text(text = "Movies", color = colorThird, style =MaterialTheme.typography.h4.copy(fontFamily = FontFamily.SansSerif, textGeometricTransform = TextGeometricTransform(1.5f)), modifier = Modifier.offset(x = 18.dp))
 
         IconButton(onClick = {ThemeColor.value=!ThemeColor.value}){
             Icon(imageVector = Icons.Default.WbSunny,contentDescription = null, tint = colorSecondary)
@@ -88,6 +184,7 @@ private fun Gridcontent(
     MoviesViewModel: MoviesViewModel
 ){
     LazyVerticalGrid(
+
         cells=GridCells.Fixed(2),
         state=state,
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
@@ -97,7 +194,7 @@ private fun Gridcontent(
 
             items(it.results.size){item->
                 if (item >= it.results.size-1 &&!Movies.value.isLoading &&!Movies.value.endReached) {
-                    MoviesViewModel.loadNextItems()
+                    MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
                 }
 
                 MovieBoxScreen(it.results.get(item),Modifier.height(200.dp).width(150.dp).padding(8.dp))
