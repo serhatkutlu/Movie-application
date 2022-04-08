@@ -20,6 +20,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import com.msk.moviesapplication.Responces.Data.Discover.Result
+import dagger.hilt.android.scopes.ViewModelScoped
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,15 +32,18 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
 
     //private val _SortingState:MutableState<Sorting_data> = mutableStateOf(Sorting_data(Sorting_Value.POPULARITY,genres(listOf())))
 
-    private val _SortingData:MutableStateFlow<Sorting_data> = MutableStateFlow(Sorting_data(Sorting_Value.POPULARITY,genres(listOf())))
+
+    private val _SortingData:MutableStateFlow<Sorting_data> = MutableStateFlow(Sorting_data(Sorting_Value.POPULARITY,mutableListOf()))
     val SortingData:StateFlow<Sorting_data> = _SortingData
+
+
 
     private val _MoviesState= mutableStateOf(MoviesState())
     val MoviesState:State<MoviesState> =_MoviesState
 
     //val isPaginationLoading:MutableState<Boolean> = mutableStateOf(false)
 
-    val Genres:MutableState<genres> = mutableStateOf(genres(listOf()))
+    val Genres:MutableState<genres> = mutableStateOf(genres(mutableListOf()))
 
     private var getMovieJob : Job? =null
     private var getGenreJob : Job? =null
@@ -67,12 +72,33 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
     fun OnEvent(MoviesEvent:MoviesEvent){
         when(MoviesEvent){
             is MoviesEvent.OrderSection->{
-                if (SortingData.value.Sorting_value==MoviesEvent.sortingData.Sorting_value&&SortingData.value.Genre.genres==MoviesEvent.sortingData.Genre.genres){
-                    return
+                if (SortingData.value.Sorting_value==MoviesEvent.sortingData.Sorting_value){
+                    val genre=MoviesEvent.sortingData.Genre[0]
+
+                    if(SortingData.value.Genre.contains(genre))  {
+
+                        val fakeList= mutableListOf<Genre>()
+                        SortingData.value.Genre.forEach{
+                            fakeList.add(it)
+                        }
+                        fakeList.remove(genre)
+                        _SortingData.value=SortingData.value.copy(Genre = fakeList)
+
+                    }
+                    else{
+                        val fakeList= mutableListOf<Genre>()
+                        SortingData.value.Genre.forEach{
+                            fakeList.add(it)
+                        }
+                        fakeList.add(genre)
+                        _SortingData.value=SortingData.value.copy(Genre = fakeList)
+
+                    }
                 }
-                _SortingData.value=SortingData.value.copy(Sorting_value = MoviesEvent.sortingData.Sorting_value)
+                else{
+                    _SortingData.value=SortingData.value.copy(Sorting_value = MoviesEvent.sortingData.Sorting_value)
 
-
+                }
             }
             is MoviesEvent.ToggleOrderSection->{
                 _MoviesState.value=MoviesState.value.copy(isOrderSectionVisible = !MoviesState.value.isOrderSectionVisible)

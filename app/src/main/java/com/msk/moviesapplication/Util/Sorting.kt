@@ -15,10 +15,10 @@ sealed class Sorting_Value(val value:String){
 
 data class Sorting_data(
     val Sorting_value:Sorting_Value,
-    val Genre:genres
+    val Genre: MutableList<Genre>
 ){
     fun GenreToString():String{
-        if (Genre.genres.isNotEmpty()) return Genre.genres.joinToString { "," }
+        if (Genre.isNotEmpty()) return Genre.joinToString { "," }
         else return ""
     }
 }

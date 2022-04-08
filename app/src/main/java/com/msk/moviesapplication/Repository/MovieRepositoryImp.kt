@@ -16,6 +16,7 @@ class MovieRepositoryImp @Inject constructor(private val api: api) {
 
       fun getMovies( sortingData: Sorting_data,page:Int=1): Flow<Movies> {
         return flow {
+            Log.d("hatalar",sortingData.Sorting_value.value +"adad"+sortingData.GenreToString())
             val Movies=api.getDiscoverMovie(sort_by = sortingData.Sorting_value.value, page = page, genreId = sortingData.GenreToString())
             emit(Movies)
         }

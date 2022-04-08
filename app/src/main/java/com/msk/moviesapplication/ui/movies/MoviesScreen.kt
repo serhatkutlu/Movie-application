@@ -33,6 +33,7 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import com.msk.moviesapplication.Responces.Data.Discover.Result
 import coil.compose.rememberImagePainter
+import com.msk.moviesapplication.Responces.Data.genre.genres
 import com.msk.moviesapplication.Util.Sorting_Value
 import com.msk.moviesapplication.Util.Sorting_data
 import com.msk.moviesapplication.Util.addbaseUrl
@@ -53,6 +54,7 @@ fun MoviesScreen(
 
    LaunchedEffect(Unit){
        MoviesViewModel.SortingData.collect{
+
            state.scrollToItem(0)
            MoviesViewModel.resetPagination()
            MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
@@ -93,7 +95,7 @@ fun mainContent(
 
 
 }
-@OptIn(ExperimentalFoundationApi::class, androidx.compose.material.ExperimentalMaterialApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 private fun OrderSection(
     moviesState: State<MoviesState>,
@@ -123,6 +125,8 @@ private fun OrderSection(
                 Row {
                     DefaulthRadioButton("VOTE COUNT", selected =SortingData.value.Sorting_value is Sorting_Value.VOTE_COUNT, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.VOTE_COUNT)))} )
                 }
+                Text("Genre", style = MaterialTheme.typography.h5, modifier = Modifier.align(Alignment.CenterHorizontally))
+
                 Divider()
 
                 if (genres.value.genres.isNotEmpty()){
@@ -131,12 +135,14 @@ private fun OrderSection(
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
                     ){
-                        items(genres.value.genres) {
-                            Card (shape = RoundedCornerShape(10.dp), onClick = {}, modifier = Modifier.fillMaxSize(), border = BorderStroke(1.dp, Color.DarkGray)){
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(5.dp)){
-                                    Text(text = it.name, textAlign = TextAlign.Center)
 
-                                }
+                        items(genres.value.genres) {
+                            val BackgroundColor=if (SortingData.value.Genre.contains(it)) Color.Gray else MaterialTheme.colors.background
+                            Card (shape = RoundedCornerShape(10.dp), onClick = {
+                                MoviesViewModel.OnEvent(MoviesEvent.OrderSection(SortingData.value.copy(Genre = mutableListOf(it))))
+                            }, modifier = Modifier.fillMaxSize(), border = BorderStroke(1.dp, Color.Black), backgroundColor =BackgroundColor){
+                                    Text(text =it.name, textAlign = TextAlign.Center, modifier =  Modifier.padding(5.dp))
+
                             }
 
                         }
