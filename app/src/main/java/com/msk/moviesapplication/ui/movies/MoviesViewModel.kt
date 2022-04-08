@@ -64,6 +64,7 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
 
     init {
         GetGenre()
+
     }
 
 
@@ -118,7 +119,6 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
         getMovieJob=MovieRepository.getMovies(sortingValue,page).onEach {
 
             val movies=MoviesState.value.movies?.results ?: listOf()
-            //_MoviesState.value.movies=it.copy(results = movies+it.results)
             _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = movies+it.results) )
             if (it.totalPages==page+1){
                 _MoviesState.value.endReached=true
@@ -134,8 +134,11 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
         }.launchIn(viewModelScope)
     }
 
-     fun resetPagination(){
-        paginator.reset()
+     fun resetmovies(){
+         _MoviesState.value=_MoviesState.value.copy(movies = null)
+         paginator.reset()
+         loadNextItems()
+
     }
 
     private fun loadNextItems() {

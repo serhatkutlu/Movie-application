@@ -38,7 +38,8 @@ import com.msk.moviesapplication.Util.Sorting_Value
 import com.msk.moviesapplication.Util.Sorting_data
 import com.msk.moviesapplication.Util.addbaseUrl
 import com.msk.moviesapplication.ui.theme.MoviesApplicationTheme
-//Divider
+import kotlin.math.log
+
 @Composable
 fun MoviesScreen(
     navController: NavController,
@@ -54,10 +55,8 @@ fun MoviesScreen(
 
    LaunchedEffect(Unit){
        MoviesViewModel.SortingData.collect{
-
            state.scrollToItem(0)
-           MoviesViewModel.resetPagination()
-           MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
+           MoviesViewModel.resetmovies()
        }
    }
     Scaffold(
@@ -197,13 +196,12 @@ private fun Gridcontent(
         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
     ){
         Movies.value.movies?.let {
-
-            items(it.results.size){item->
+            items(it.results.count()){item->
                 if (item >= it.results.size-1 &&!Movies.value.isLoading &&!Movies.value.endReached) {
                     MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
                 }
 
-                MovieBoxScreen(it.results.get(item),Modifier.height(200.dp).width(150.dp).padding(8.dp))
+                    MovieBoxScreen(it.results[item],Modifier.height(200.dp).width(150.dp).padding(8.dp))
 
             }
 
@@ -236,37 +234,28 @@ private fun Gridcontent(
 fun MovieBoxScreen(movie:Result,modifier:Modifier=Modifier){
     Box(modifier){
         Card(shape = AbsoluteRoundedCornerShape(10.dp), modifier = Modifier.fillMaxSize()) {
-            //val painter1= Icons.Default.Movie
-            val painter= rememberImagePainter(data=movie.posterPath.addbaseUrl())
+            val painter= rememberImagePainter(data=movie.posterPath?.addbaseUrl())
             when(painter.state){
                 is ImagePainter.State.Loading->{
                     CircularProgressIndicator(modifier = Modifier.size(12.dp))
                 }
                 is ImagePainter.State.Error->{
-                    Log.d("hatalar",(painter.state as ImagePainter.State.Error).result.throwable.localizedMessage ?: "")
-                    painter.request.placeholder
+                    Log.d("hatalar",(painter.state as ImagePainter.State.Error).result.throwable.localizedMessage ?: "image")
                     Image(Icons.Default.Movie,contentDescription = "error")
                 }
-                else ->{
-                    Image(painter,contentDescription = movie.originalTitle, contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
+               else->{
+                    Image(painter,contentDescription = null, contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
 
                 }
+
 
             }
         }
         Box(modifier = Modifier.fillMaxWidth().background(Color(0xFF79272626)).align(Alignment.BottomCenter)){
-            Text(movie.title, style = MaterialTheme.typography.h5, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, maxLines = 1, color = Color.White)
+            //Text(movie.title, style = MaterialTheme.typography.h5, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, maxLines = 1, color = Color.White)
         }
 
 
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    MoviesApplicationTheme(true) {
-
-        }
-
-    }

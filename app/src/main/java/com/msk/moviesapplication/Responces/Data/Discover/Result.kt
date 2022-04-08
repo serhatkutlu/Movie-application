@@ -21,7 +21,7 @@ data class Result(
     @SerializedName("popularity")
     val popularity: Float, // 6646
     @SerializedName("poster_path")
-    val posterPath: String, // /1g0dhYtq4irTY1GPXvft6k4YLjm.jpg
+    val posterPath: String?, // /1g0dhYtq4irTY1GPXvft6k4YLjm.jpg
     @SerializedName("release_date")
     val releaseDate: String, // 2021-12-15
     @SerializedName("title")
