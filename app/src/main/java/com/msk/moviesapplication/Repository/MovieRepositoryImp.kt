@@ -2,6 +2,7 @@ package com.msk.moviesapplication.Repository
 
 import android.util.Log
 import com.msk.moviesapplication.Responces.Data.Discover.Movies
+import com.msk.moviesapplication.Responces.Data.Discover.Result
 import com.msk.moviesapplication.Responces.Data.genre.Genre
 import com.msk.moviesapplication.Responces.Data.genre.genres
 import com.msk.moviesapplication.Util.Sorting_Value
@@ -16,8 +17,8 @@ class MovieRepositoryImp @Inject constructor(private val api: api) {
 
       fun getMovies( sortingData: Sorting_data,page:Int=1): Flow<Movies> {
         return flow {
-            Log.d("hatalar",sortingData.Sorting_value.value +"adad"+sortingData.GenreToString())
             val Movies=api.getDiscoverMovie(sort_by = sortingData.Sorting_value.value, page = page, genreId = sortingData.GenreToString())
+           checkNullPoster(Movies)
             emit(Movies)
         }
     }
@@ -28,4 +29,15 @@ class MovieRepositoryImp @Inject constructor(private val api: api) {
              emit(genre)
          }
      }
+
+    private fun checkNullPoster( Movies:Movies):Movies{
+        val deletedItem= mutableListOf<Result>()
+        Movies.results.forEach{
+            if (it.posterPath.isNullOrEmpty()){
+                deletedItem.add(it)
+            }
+        }
+        Movies.results.removeAll(deletedItem)
+        return Movies
+    }
 }
