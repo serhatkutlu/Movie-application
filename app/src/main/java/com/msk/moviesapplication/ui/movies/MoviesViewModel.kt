@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -17,12 +18,11 @@ import com.msk.moviesapplication.Util.Sorting_Value
 import com.msk.moviesapplication.Util.Sorting_data
 import com.msk.moviesapplication.api.api
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import com.msk.moviesapplication.Responces.Data.Discover.Result
 import dagger.hilt.android.scopes.ViewModelScoped
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import okhttp3.internal.wait
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,13 +50,13 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
 
     private val paginator = DefaulthPaginator(
         initialKey = 1,
-        onLoadUpdated = {
-            _MoviesState.value.isLoading=it
-        },
         onRequest = { nextPage ->
+            if (getMovieJob?.isActive ?: false){
+                return@DefaulthPaginator nextPage
+            }
+                GetMovies(sortingValue = SortingData.value,nextPage)
 
-            GetMovies(sortingValue = SortingData.value,nextPage)
-            nextPage+1
+                 nextPage+1
         }
 
 
@@ -115,15 +115,20 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
 
     private fun GetMovies( sortingValue: Sorting_data,page:Int=1){
         getMovieJob?.cancel()
-
+        _MoviesState.value=MoviesState.value.copy(isLoading = true)
         getMovieJob=MovieRepository.getMovies(sortingValue,page).onEach {
+            _MoviesState.value=MoviesState.value.copy(isLoading = false)
+            val movies=MoviesState.value.movies?.results ?: mutableListOf()
 
-            val movies=MoviesState.value.movies?.results ?: listOf()
-            _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = movies+it.results) )
+            _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = (movies+it.results).toMutableList()) )
+
             if (it.totalPages==page+1){
                 _MoviesState.value.endReached=true
             }
+
+
         }.launchIn(viewModelScope)
+
     }
 
     private fun GetGenre(){

@@ -86,9 +86,13 @@ fun mainContent(
             }
         }
             OrderSection(moviesState,MoviesViewModel,SortingData)
-
-
-        Gridcontent(state,moviesState,navController,MoviesViewModel)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Gridcontent(state,moviesState,navController,MoviesViewModel)
+            if (moviesState.value.isLoading){
+            Box(modifier=Modifier.fillMaxSize(0.2f).align(Alignment.Center)) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).fillMaxSize(), strokeWidth = 7.dp)
+            }
+        }}
     }
 
 
@@ -195,9 +199,11 @@ private fun Gridcontent(
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
     ){
+
         Movies.value.movies?.let {
-            items(it.results.count()){item->
-                if (item >= it.results.size-1 &&!Movies.value.isLoading &&!Movies.value.endReached) {
+            items(it.results.size){item->
+
+                if (item >= it.results.size-2 &&!Movies.value.isLoading &&!Movies.value.endReached) {
                     MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
                 }
 
@@ -237,14 +243,16 @@ fun MovieBoxScreen(movie:Result,modifier:Modifier=Modifier){
             val painter= rememberImagePainter(data=movie.posterPath?.addbaseUrl())
             when(painter.state){
                 is ImagePainter.State.Loading->{
-                    CircularProgressIndicator(modifier = Modifier.size(12.dp))
+                    Box(modifier=Modifier.fillMaxSize(0.3f)) {
+                        CircularProgressIndicator(modifier=Modifier.align(Alignment.Center))
+                    }
                 }
                 is ImagePainter.State.Error->{
                     Log.d("hatalar",(painter.state as ImagePainter.State.Error).result.throwable.localizedMessage ?: "image")
                     Image(Icons.Default.Movie,contentDescription = "error")
                 }
                else->{
-                    Image(painter,contentDescription = null, contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
+                   Image(painter,contentDescription = null, contentScale = ContentScale.FillBounds, modifier = Modifier.fillMaxSize())
 
                 }
 
@@ -252,7 +260,7 @@ fun MovieBoxScreen(movie:Result,modifier:Modifier=Modifier){
             }
         }
         Box(modifier = Modifier.fillMaxWidth().background(Color(0xFF79272626)).align(Alignment.BottomCenter)){
-            //Text(movie.title, style = MaterialTheme.typography.h5, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, maxLines = 1, color = Color.White)
+            Text(movie.title, style = MaterialTheme.typography.h5, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, maxLines = 1, color = Color.White)
         }
 
 
