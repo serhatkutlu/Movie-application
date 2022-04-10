@@ -2,6 +2,7 @@ package com.msk.moviesapplication.Responces.Data.Getdetail
 
 
 import com.google.gson.annotations.SerializedName
+import com.msk.moviesapplication.Responces.Data.genre.Genre
 
 data class Details(
     @SerializedName("adult")
