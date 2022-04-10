@@ -2,7 +2,8 @@ package com.msk.moviesapplication.Di
 
 import com.msk.moviesapplication.Util.Constants.URL
 import com.msk.moviesapplication.api.Util.apiInterceptor
-import com.msk.moviesapplication.api.api
+import com.msk.moviesapplication.api.MovieApi
+import com.msk.moviesapplication.api.MovieDetailApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,7 +17,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object Module {
+object MovieModule {
 
 
     @Provides
@@ -34,13 +35,22 @@ object Module {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient:OkHttpClient):api{
+    fun provideRetrofit(okHttpClient:OkHttpClient): Retrofit {
 
          return Retrofit.Builder()
              .baseUrl(URL)
              .client(okHttpClient)
              .addConverterFactory(GsonConverterFactory.create())
-             .build().create(api::class.java)
-
+             .build()
+    }
+    @Provides
+    @Singleton
+    fun provideMovieApi(retrofit: Retrofit):MovieApi{
+        return retrofit.create(MovieApi::class.java)
+    }
+    @Provides
+    @Singleton
+    fun provideMovieDetailApi(retrofit: Retrofit):MovieDetailApi{
+        return retrofit.create(MovieDetailApi::class.java)
     }
 }
