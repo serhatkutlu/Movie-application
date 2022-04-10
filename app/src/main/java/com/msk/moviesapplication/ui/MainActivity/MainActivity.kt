@@ -2,44 +2,58 @@ package com.msk.moviesapplication.ui.MainActivity
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavType
+
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.msk.moviesapplication.api.api
+import androidx.navigation.navArgument
+import com.msk.moviesapplication.api.MovieApi
+import com.msk.moviesapplication.ui.MovieDetailScreen.DetailScreen
+import com.msk.moviesapplication.ui.Util.MoviesScreenRoute
 import com.msk.moviesapplication.ui.movies.MoviesScreen
 import com.msk.moviesapplication.ui.theme.MoviesApplicationTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var api:api
+    lateinit var MovieApi: MovieApi
 
 
+    @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val darktheme:MutableState<Boolean> = remember { mutableStateOf(true) }
-            val navController= rememberNavController()
             MoviesApplicationTheme(darkTheme =darktheme.value ) {
-               MoviesScreen(navController,darktheme)
+                val laststates: MutableState<LastStates?> = mutableStateOf(null)
+                val navController= rememberNavController()
+                NavHost(navController, startDestination = MoviesScreenRoute.MoviesMainScreen.route){
+                    composable(route=MoviesScreenRoute.MoviesMainScreen.route){
+                        MoviesScreen(navController,darktheme,laststates)
+                    }
+                    composable(route = MoviesScreenRoute.MoviesDetail.route+"?movieid={movieId}", arguments = listOf(
+                        navArgument(
+                            name = "movieId"
+                        ){
+                            type= NavType.IntType
+                        }
+                    ))
+                    {
+                        val MovieId=it.arguments?.getInt("movieId") ?: 634649
+                        DetailScreen(navController, Movieid = MovieId)
+                    }
+                }
             }
         }
     }
