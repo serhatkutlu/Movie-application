@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface api {
+interface MovieApi {
 
     @GET("discover/movie")
     suspend fun getDiscoverMovie(
@@ -22,3 +22,4 @@ interface api {
     @GET("genre/movie/list")
     suspend fun getGenre():genres
 }
+
