@@ -1,32 +1,26 @@
 package com.msk.moviesapplication.ui.movies
 
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import com.msk.moviesapplication.Pagination.DefaulthPaginator
-import com.msk.moviesapplication.Repository.MovieRepositoryImp
+import com.msk.moviesapplication.Repository.MovieScreen.MovieRepositoryImp
+import com.msk.moviesapplication.Responces.Data.Discover.Movies
 import com.msk.moviesapplication.Responces.Data.genre.Genre
 import com.msk.moviesapplication.Responces.Data.genre.genres
 import com.msk.moviesapplication.Util.Sorting_Value
 import com.msk.moviesapplication.Util.Sorting_data
-import com.msk.moviesapplication.api.api
+import com.msk.moviesapplication.api.MovieApi
+import com.msk.moviesapplication.ui.MainActivity.LastStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import com.msk.moviesapplication.Responces.Data.Discover.Result
-import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.*
-import okhttp3.internal.wait
 import javax.inject.Inject
 
 @HiltViewModel
-class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp,val api: api):ViewModel() {
+class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryImp, MovieApi: MovieApi):ViewModel() {
 
 
 
@@ -48,19 +42,20 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
     private var getMovieJob : Job? =null
     private var getGenreJob : Job? =null
 
-    private val paginator = DefaulthPaginator(
-        initialKey = 1,
-        onRequest = { nextPage ->
-            if (getMovieJob?.isActive ?: false){
-                return@DefaulthPaginator nextPage
-            }
+    private var initialPageKey=1
+    private val paginator :DefaulthPaginator by lazy{
+        DefaulthPaginator(
+            initialKey = initialPageKey,
+            onRequest = { nextPage ->
+                if (getMovieJob?.isActive ?: false){
+                    return@DefaulthPaginator nextPage
+                }
                 GetMovies(sortingValue = SortingData.value,nextPage)
 
-                 nextPage+1
-        }
-
-
-    )
+                nextPage+1
+            }
+        )
+    }
 
     init {
         GetGenre()
@@ -143,7 +138,12 @@ class MoviesViewModel @Inject constructor(val MovieRepository:MovieRepositoryImp
          _MoviesState.value=_MoviesState.value.copy(movies = null)
          paginator.reset()
          loadNextItems()
+    }
 
+    fun addLastMovies(lastStates: LastStates) {
+        _SortingData.value=lastStates.sortingData
+        _MoviesState.value=lastStates.moviesState
+        initialPageKey=lastStates.moviesState.movies?.page ?: 1
     }
 
     private fun loadNextItems() {

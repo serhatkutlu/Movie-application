@@ -1,14 +1,12 @@
 package com.msk.moviesapplication.ui.movies
 
 import android.annotation.SuppressLint
-import android.text.style.ParagraphStyle
 import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -20,12 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextGeometricTransform
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -33,17 +29,17 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import com.msk.moviesapplication.Responces.Data.Discover.Result
 import coil.compose.rememberImagePainter
-import com.msk.moviesapplication.Responces.Data.genre.genres
 import com.msk.moviesapplication.Util.Sorting_Value
 import com.msk.moviesapplication.Util.Sorting_data
 import com.msk.moviesapplication.Util.addbaseUrl
-import com.msk.moviesapplication.ui.theme.MoviesApplicationTheme
-import kotlin.math.log
+import com.msk.moviesapplication.ui.MainActivity.LastStates
+import com.msk.moviesapplication.ui.Util.MoviesScreenRoute
 
 @Composable
 fun MoviesScreen(
     navController: NavController,
-    ThemeColor: MutableState<Boolean>
+    ThemeColor: MutableState<Boolean>,
+    lastStates: MutableState<LastStates?>
 ){
     val scaffoldState= rememberScaffoldState()
     val MoviesViewModel= hiltViewModel<MoviesViewModel>()
@@ -51,22 +47,29 @@ fun MoviesScreen(
     val state= rememberLazyListState()
     val Sorting_data=MoviesViewModel.SortingData.collectAsState()
 
-
-
    LaunchedEffect(Unit){
-       MoviesViewModel.SortingData.collect{
-           state.scrollToItem(0)
-           MoviesViewModel.resetmovies()
+       if (lastStates.value==null){
+           MoviesViewModel.SortingData.collect{
+               state.scrollToItem(0)
+               MoviesViewModel.resetmovies()
+           }
+       }else{
+           MoviesViewModel.addLastMovies(lastStates.value!!)
        }
+
    }
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {Surface(Modifier.fillMaxWidth().wrapContentHeight()) {
             AppBar(ThemeColor)
         }}
-        , content = { mainContent(state,moviesState,navController,MoviesViewModel,Sorting_data)
+        , content = { mainContent(state,moviesState,navController,MoviesViewModel,Sorting_data){
+            lastStates.value= LastStates(moviesState = moviesState.value, sortingData = Sorting_data.value)
+            navController.navigate(MoviesScreenRoute.MoviesDetail.route+"?movieid=$it")
         }
+        }   
     )
+
 
 }
 @Composable
@@ -76,7 +79,8 @@ fun mainContent(
     navController: NavController,
     MoviesViewModel: MoviesViewModel,
     SortingData:State<Sorting_data>,
-    orderSectionClick:()->Unit={MoviesViewModel.OnEvent(MoviesEvent.ToggleOrderSection)}
+    orderSectionClick:()->Unit={MoviesViewModel.OnEvent(MoviesEvent.ToggleOrderSection)},
+    cardOnclick:(Int)->Unit
 ) {
     Column{
 
@@ -87,7 +91,7 @@ fun mainContent(
         }
             OrderSection(moviesState,MoviesViewModel,SortingData)
         Box(modifier = Modifier.fillMaxSize()) {
-            Gridcontent(state,moviesState,navController,MoviesViewModel)
+            Gridcontent(state,moviesState,navController,MoviesViewModel, cardOnclick = cardOnclick)
             if (moviesState.value.isLoading){
             Box(modifier=Modifier.fillMaxSize(0.2f).align(Alignment.Center)) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).fillMaxSize(), strokeWidth = 7.dp)
@@ -190,7 +194,8 @@ private fun Gridcontent(
     state: LazyListState,
     Movies: State<MoviesState>,
     navController: NavController,
-    MoviesViewModel: MoviesViewModel
+    MoviesViewModel: MoviesViewModel,
+    cardOnclick:(Int)->Unit
 ){
     LazyVerticalGrid(
 
@@ -207,7 +212,7 @@ private fun Gridcontent(
                     MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
                 }
 
-                    MovieBoxScreen(it.results[item],Modifier.height(200.dp).width(150.dp).padding(8.dp))
+                    MovieBoxScreen(navController,it.results[item],Modifier.height(200.dp).width(150.dp).padding(8.dp), cardOnclick = cardOnclick)
 
             }
 
@@ -235,11 +240,11 @@ private fun Gridcontent(
 }
 
 @SuppressLint("InvalidColorHexValue")
-@OptIn(ExperimentalCoilApi::class)
+@OptIn(ExperimentalCoilApi::class, androidx.compose.material.ExperimentalMaterialApi::class)
 @Composable
-fun MovieBoxScreen(movie:Result,modifier:Modifier=Modifier){
+fun MovieBoxScreen(navController: NavController, movie: Result, modifier: Modifier = Modifier,cardOnclick:(Int)->Unit){
     Box(modifier){
-        Card(shape = AbsoluteRoundedCornerShape(10.dp), modifier = Modifier.fillMaxSize()) {
+        Card(shape = AbsoluteRoundedCornerShape(10.dp), modifier = Modifier.fillMaxSize(), onClick = {cardOnclick(movie.id)}) {
             val painter= rememberImagePainter(data=movie.posterPath?.addbaseUrl())
             when(painter.state){
                 is ImagePainter.State.Loading->{
@@ -266,4 +271,5 @@ fun MovieBoxScreen(movie:Result,modifier:Modifier=Modifier){
 
     }
 }
+
 

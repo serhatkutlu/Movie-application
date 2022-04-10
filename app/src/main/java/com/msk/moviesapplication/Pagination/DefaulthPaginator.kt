@@ -17,6 +17,7 @@ class DefaulthPaginator(
         if(isMakingRequest) {
             return
         }
+        Log.d("hatalar",currentKey.toString())
         isMakingRequest = true
         currentKey = onRequest(currentKey)
 
