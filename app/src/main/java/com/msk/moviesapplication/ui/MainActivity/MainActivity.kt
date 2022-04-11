@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     ))
                     {
                         val MovieId=it.arguments?.getInt("movieId") ?: 634649
-                        DetailScreen(navController, Movieid = MovieId)
+                        DetailScreen(navController, Movieid = MovieId,darktheme)
                     }
                 }
             }
