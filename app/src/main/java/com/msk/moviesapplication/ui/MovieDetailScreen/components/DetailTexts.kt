@@ -17,12 +17,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.msk.moviesapplication.Responces.Data.Getdetail.Details
+import com.msk.moviesapplication.ui.MovieDetailScreen.MovieDetailState
 import kotlin.random.Random
 
 @Composable
-fun DetailText(details: State<Details?>, darktheme: State<Boolean>) {
+fun DetailText(details: State<MovieDetailState>, darktheme: State<Boolean>) {
     val color=if (darktheme.value) Color(0xFF252727) else Color(0xFFe4e4e2)
-    details.value?.let {
+    details.value.details?.let {
         Card(shape = RoundedCornerShape(35.dp)) {
 
             Column(Modifier.background(color).padding(bottom = 70.dp)) {
