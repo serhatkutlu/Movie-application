@@ -118,7 +118,7 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
             _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = (movies+it.results).toMutableList()) )
 
             if (it.totalPages==page+1){
-                _MoviesState.value.endReached=true
+                _MoviesState.value=MoviesState.value.copy(endReached = true)
             }
 
 

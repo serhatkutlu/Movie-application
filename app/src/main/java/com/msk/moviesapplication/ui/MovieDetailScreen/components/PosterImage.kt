@@ -17,24 +17,25 @@ import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import coil.transform.CircleCropTransformation
+import coil.transform.RoundedCornersTransformation
 import coil.transition.CrossfadeTransition
 import com.msk.moviesapplication.Responces.Data.Getdetail.Details
 import com.msk.moviesapplication.Util.addbaseUrl
+import com.msk.moviesapplication.ui.MovieDetailScreen.MovieDetailState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun Poster(details: State<Details?>, state: LazyListState, scope: CoroutineScope) {
-    details.value?.let {
+fun Poster(details: State<MovieDetailState>, state: LazyListState, scope: CoroutineScope) {
+    details.value.details?.let {
         val backdroppath= rememberImagePainter(data = it.backdropPath.addbaseUrl(),builder = {
-            transformations(BlurTransformation(LocalContext.current,5f))
+            transformations(BlurTransformation(LocalContext.current,5f),RoundedCornersTransformation(bottomLeft = 30f, bottomRight = 30f))
             transition(CrossfadeTransition(1000,true))
-
         })
         val poster= rememberImagePainter(data = it.posterPath.addbaseUrl(), builder = {
-            transformations(CircleCropTransformation())
+            transformations(RoundedCornersTransformation(50f))
         })
         when(backdroppath.state){
             is ImagePainter.State.Error->{
@@ -52,11 +53,11 @@ fun Poster(details: State<Details?>, state: LazyListState, scope: CoroutineScope
             Image(
                 painter = backdroppath,
                 contentDescription = null,
-                modifier = Modifier.fillMaxWidth().height(230.dp).align(Alignment.TopCenter),
-                contentScale = ContentScale.FillWidth
+                modifier = Modifier.fillMaxWidth().height(300.dp).align(Alignment.TopCenter),
+                contentScale = ContentScale.FillHeight
             )
 
-            Image(painter = poster,contentDescription = null, modifier = Modifier.height(200.dp).align(
+            Image(painter = poster,contentDescription = null,contentScale = ContentScale.FillHeight, modifier = Modifier.height(250.dp).fillMaxWidth(0.4f).align(
                 Alignment.Center))
 
 
