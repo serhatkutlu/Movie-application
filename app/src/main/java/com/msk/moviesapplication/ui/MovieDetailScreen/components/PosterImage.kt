@@ -30,11 +30,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun Poster(details: State<MovieDetailState>, state: LazyListState, scope: CoroutineScope) {
     details.value.details?.let {
-        val backdroppath= rememberImagePainter(data = it.backdropPath.addbaseUrl(),builder = {
+        val backdroppath= rememberImagePainter(data = it.backdropPath?.addbaseUrl(),builder = {
             transformations(BlurTransformation(LocalContext.current,5f),RoundedCornersTransformation(bottomLeft = 30f, bottomRight = 30f))
             transition(CrossfadeTransition(1000,true))
         })
-        val poster= rememberImagePainter(data = it.posterPath.addbaseUrl(), builder = {
+        val poster= rememberImagePainter(data = it.posterPath?.addbaseUrl(), builder = {
             transformations(RoundedCornersTransformation(50f))
         })
         when(backdroppath.state){

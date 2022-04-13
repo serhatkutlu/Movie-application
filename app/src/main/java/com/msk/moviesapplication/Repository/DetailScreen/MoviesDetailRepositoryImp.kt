@@ -1,5 +1,6 @@
 package com.msk.moviesapplication.Repository.DetailScreen
 
+import android.util.Log
 import com.msk.moviesapplication.Responces.Data.Getdetail.Details
 import com.msk.moviesapplication.Responces.Data.comments.comment
 import com.msk.moviesapplication.api.MovieDetailApi

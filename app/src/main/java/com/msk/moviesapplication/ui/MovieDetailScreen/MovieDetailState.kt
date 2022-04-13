@@ -5,7 +5,8 @@ import com.msk.moviesapplication.Responces.Data.Getdetail.Details
 import com.msk.moviesapplication.Responces.Data.comments.comment
 
 data class MovieDetailState(
-    val comment: MutableList<comment?> = mutableListOf(null),
+    val comment: comment? = null,
     val details: Details?=null,
-    var endReached:Boolean=false
+    var endReached:Boolean=false,
+    var isLoading:Boolean=false
 )
