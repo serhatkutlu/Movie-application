@@ -1,5 +1,6 @@
 package com.msk.moviesapplication.ui.movies
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +21,7 @@ import kotlinx.coroutines.*
 import javax.inject.Inject
 
 @HiltViewModel
-class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryImp, MovieApi: MovieApi):ViewModel() {
+class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryImp):ViewModel() {
 
 
 
@@ -35,7 +36,6 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
     private val _MoviesState= mutableStateOf(MoviesState())
     val MoviesState:State<MoviesState> =_MoviesState
 
-    //val isPaginationLoading:MutableState<Boolean> = mutableStateOf(false)
 
     val Genres:MutableState<genres> = mutableStateOf(genres(mutableListOf()))
 
@@ -72,7 +72,6 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
                     val genre=MoviesEvent.sortingData.Genre[0]
 
                     if(SortingData.value.Genre.contains(genre))  {
-
                         val fakeList= mutableListOf<Genre>()
                         SortingData.value.Genre.forEach{
                             fakeList.add(it)
@@ -93,7 +92,6 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
                 }
                 else{
                     _SortingData.value=SortingData.value.copy(Sorting_value = MoviesEvent.sortingData.Sorting_value)
-
                 }
             }
             is MoviesEvent.ToggleOrderSection->{
@@ -112,11 +110,9 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
         getMovieJob?.cancel()
         _MoviesState.value=MoviesState.value.copy(isLoading = true)
         getMovieJob=MovieRepository.getMovies(sortingValue,page).onEach {
-            _MoviesState.value=MoviesState.value.copy(isLoading = false)
             val movies=MoviesState.value.movies?.results ?: mutableListOf()
-
             _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = (movies+it.results).toMutableList()) )
-
+            _MoviesState.value=MoviesState.value.copy(isLoading = false)
             if (it.totalPages==page+1){
                 _MoviesState.value=MoviesState.value.copy(endReached = true)
             }

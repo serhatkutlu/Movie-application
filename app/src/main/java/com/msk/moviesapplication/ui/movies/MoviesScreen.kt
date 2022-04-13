@@ -1,6 +1,7 @@
 package com.msk.moviesapplication.ui.movies
 
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
@@ -32,14 +33,20 @@ fun MoviesScreen(
     val Sorting_data=MoviesViewModel.SortingData.collectAsState()
 
    LaunchedEffect(Unit){
-       if (lastStates.value==null){
-           MoviesViewModel.SortingData.collect{
+
+       MoviesViewModel.SortingData.collect{
+           if(lastStates.value==null){
                state.scrollToItem(0)
                MoviesViewModel.resetmovies()
            }
-       }else{
-           MoviesViewModel.addLastMovies(lastStates.value!!)
+           else{
+               MoviesViewModel.addLastMovies(lastStates.value!!)
+               lastStates.value=null
+
+           }
+
        }
+
 
    }
     Scaffold(
@@ -74,7 +81,7 @@ fun mainContent(
                 Icon(Icons.Default.Sort,contentDescription = "Sort", modifier = Modifier.size(30.dp))
             }
         }
-            OrderSectionbutton(moviesState,MoviesViewModel,SortingData)
+        OrderSectionbutton(moviesState,MoviesViewModel,SortingData)
         Box(modifier = Modifier.fillMaxSize()) {
             Gridcontent(state,moviesState,navController,MoviesViewModel, cardOnclick = cardOnclick)
             if (moviesState.value.isLoading){
