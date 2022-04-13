@@ -14,7 +14,7 @@ interface MovieDetailApi {
         movieid:Int
     ):Details
 
-    @GET("/movie/{movieid}/reviews")
+    @GET("movie/{movieid}/reviews")
     suspend fun GetMovieComments(
         @Path("movieid")
         movieid:Int,
