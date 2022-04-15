@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
@@ -30,7 +31,7 @@ import kotlin.random.Random
 
 @Composable
 fun DetailText(details: State<MovieDetailState>, darktheme: State<Boolean>, showsheet: () -> Unit) {
-    val color=if (darktheme.value) Color(0xFF252727) else Color(0xFFe4e4e2)
+    //val color=if (darktheme.value) Color(0xFF252727) else Color(0xFFe4e4e2)
     details.value.details?.let {
         Card(shape = RoundedCornerShape(35.dp)) {
             val randomColors:MutableList<Color> = remember {
@@ -40,7 +41,7 @@ fun DetailText(details: State<MovieDetailState>, darktheme: State<Boolean>, show
                 }
             return@remember list}
 
-            Column(Modifier.background(color).padding(bottom = 70.dp)) {
+            Column(Modifier.padding(bottom = 70.dp)) {
                 Text(
                     it.title ?:"",
                     style = MaterialTheme.typography.h4,
@@ -70,11 +71,13 @@ fun DetailText(details: State<MovieDetailState>, darktheme: State<Boolean>, show
                 }
                 Spacer(modifier = Modifier.height(30.dp))
                 Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-
+                    val fontsize=if(it.genres?.size ?:0 >3)  10.sp else 15.sp
                     for (i in (0..(it.genres?.size?.minus(1) ?: 0))) {
-                        Card(shape = RoundedCornerShape(20.dp), border = BorderStroke(2.dp, randomColors[i]), modifier = Modifier.padding(horizontal = 4.dp) ) {
+                            Card(shape = RoundedCornerShape(20.dp), border = BorderStroke(2.dp, randomColors[i]), modifier = Modifier.padding(horizontal = 4.dp) ) {
+
                             it.genres?.get(i)?.let { it1 ->
-                                Text(text = it1.name, style = MaterialTheme.typography.body1, modifier = Modifier.padding(6.dp))
+
+                                Text(text = it1.name, style = MaterialTheme.typography.body2.copy(fontSize = fontsize), modifier = Modifier.padding(6.dp))
                             }
                         }
                     }

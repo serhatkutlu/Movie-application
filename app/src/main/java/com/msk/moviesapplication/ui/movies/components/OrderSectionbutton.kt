@@ -46,13 +46,13 @@ import com.msk.moviesapplication.ui.movies.MoviesViewModel
                 Row {
                     DefaulthRadioButton("POPULARITY", selected =SortingData.value.Sorting_value is Sorting_Value.POPULARITY, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.POPULARITY)))} )
                     DefaulthRadioButton("RELEASE", selected =SortingData.value.Sorting_value is Sorting_Value.RELEASE, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.RELEASE)))} )
-                    DefaulthRadioButton("REVENUE", selected =SortingData.value.Sorting_value is Sorting_Value.REVENUE, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.REVENUE)))} )
                 }
                 Row {
                     DefaulthRadioButton("ALPHABETICALLY", selected =SortingData.value.Sorting_value is Sorting_Value.ALPHABETICALLY, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.ALPHABETICALLY)))} )
                     DefaulthRadioButton("VOTE AVARAGE", selected =SortingData.value.Sorting_value is Sorting_Value.VOTE_AVARAGE, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.VOTE_AVARAGE)))} )
                 }
                 Row {
+                    DefaulthRadioButton("REVENUE", selected =SortingData.value.Sorting_value is Sorting_Value.REVENUE, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.REVENUE)))} )
                     DefaulthRadioButton("VOTE COUNT", selected =SortingData.value.Sorting_value is Sorting_Value.VOTE_COUNT, onSelected = {MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.OrderSection(SortingData.value.copy(Sorting_value = Sorting_Value.VOTE_COUNT)))} )
                 }
                 Text("Genre", style = MaterialTheme.typography.h5, modifier = Modifier.align(

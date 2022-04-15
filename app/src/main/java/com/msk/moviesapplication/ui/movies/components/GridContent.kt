@@ -41,7 +41,7 @@ import com.msk.moviesapplication.ui.movies.MoviesViewModel
                 }
 
                 MovieBoxScreen(navController,it.results[item],
-                    Modifier.height(400.dp).width(600.dp).padding(8.dp), cardOnclick = cardOnclick)
+                    Modifier.height(350.dp).width(600.dp).padding(8.dp), cardOnclick = cardOnclick)
 
             }
 

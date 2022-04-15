@@ -49,7 +49,7 @@ fun MovieBoxScreen(navController: NavController, movie: Result, modifier: Modifi
 
             }
         }
-        Box(modifier = Modifier.fillMaxWidth().background(Color(0xFF79272626)).align(Alignment.BottomCenter)){
+        Box(modifier = Modifier.fillMaxWidth().height(30.dp).align(Alignment.BottomStart)){
             Text(movie.title, style = MaterialTheme.typography.h5, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, maxLines = 1, color = Color.White, modifier = Modifier.align(Alignment.Center))
         }
         Row(modifier=Modifier.align(Alignment.TopEnd).background(Color(0xFF79272626))) {

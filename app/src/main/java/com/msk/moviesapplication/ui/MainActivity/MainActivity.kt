@@ -4,16 +4,19 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavType
 
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.msk.moviesapplication.api.MovieApi
 import com.msk.moviesapplication.ui.MovieDetailScreen.DetailScreen
 import com.msk.moviesapplication.ui.Util.MoviesScreenRoute
@@ -26,15 +29,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var MovieApi: MovieApi
-
-
     @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val systemUiController= rememberSystemUiController()
             val darktheme:MutableState<Boolean> = remember { mutableStateOf(true) }
+            systemUiController.setSystemBarsColor(if (darktheme.value) Color.Black else Color.Red)
             MoviesApplicationTheme(darkTheme =darktheme.value ) {
                 val laststates: MutableState<LastStates?> = mutableStateOf(null)
                 val navController= rememberNavController()

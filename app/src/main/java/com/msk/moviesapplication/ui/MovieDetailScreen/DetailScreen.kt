@@ -45,6 +45,8 @@ fun BottomSheet(
 ) {
     val state = rememberBottomSheetScaffoldState(bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed))
     val coroutineScope = rememberCoroutineScope()
+    val backgroundColor=if (darktheme.value) Color.DarkGray else Color.LightGray
+    val dividerColor=if (darktheme.value) Color.White else Color.Black
     val showsheet:()-> Unit= {
         coroutineScope.launch {
             state.bottomSheetState.expand()
@@ -52,11 +54,14 @@ fun BottomSheet(
     }
     BottomSheetScaffold(
         scaffoldState = state,
-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetShape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp),
         sheetPeekHeight = 0.dp,
+        backgroundColor = backgroundColor,
         sheetContent = {
-            Column (Modifier.fillMaxHeight(0.85f).fillMaxWidth().background(Color.LightGray.copy(alpha = 0.7f)).padding(25.dp)){
-                Divider(Modifier.width(100.dp).height(5.dp).align(Alignment.CenterHorizontally).offset(y = -20.dp) , Color.DarkGray)
+
+            Column (Modifier.fillMaxHeight(0.85f).fillMaxWidth().padding(25.dp)){
+                Divider(Modifier.width(100.dp).height(5.dp).align(Alignment.CenterHorizontally).offset(y = -20.dp) , color = dividerColor)
+
                 LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
                     details.value.comment?.results?.let {results->
                         items(results.size){item->

@@ -98,4 +98,6 @@ dependencies {
     //paging
     implementation "androidx.paging:paging-compose:1.0.0-alpha14"
 
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.24.6-alpha"
+
 }
