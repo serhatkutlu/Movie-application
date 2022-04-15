@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.msk.moviesapplication.ui.MovieDetailScreen.components.DetailText
 import com.msk.moviesapplication.ui.MovieDetailScreen.components.Poster
 import com.msk.moviesapplication.ui.MovieDetailScreen.components.commentBox
+import com.msk.moviesapplication.ui.NoInternetConnection.NoInternetConnectionScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -61,24 +62,34 @@ fun BottomSheet(
 
             Column (Modifier.fillMaxHeight(0.85f).fillMaxWidth().padding(25.dp)){
                 Divider(Modifier.width(100.dp).height(5.dp).align(Alignment.CenterHorizontally).offset(y = -20.dp) , color = dividerColor)
-
-                LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-                    details.value.comment?.results?.let {results->
-                        items(results.size){item->
-                            details.value.also {
-                                if (it.isLoading==false&&it.endReached==false&&results.size-1<=item){
-                                    viewModel.OnEvent(DetailEvent.getComment)
-                                }
-                            }
-                            commentBox(results[item],100)
-                        }
+                if (details.value.isError.isNotBlank()){
+                    NoInternetConnectionScreen {
+                        viewModel.OnEvent(DetailEvent.getComment)
                     }
+                }else {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                        details.value.comment?.results?.let { results ->
+                            items(results.size) { item ->
+                                details.value.also {
+                                    if (it.isLoading == false && it.endReached == false && results.size - 1 <= item) {
+                                        viewModel.OnEvent(DetailEvent.getComment)
+                                    }
+                                }
+                                commentBox(results[item], 100)
+                            }
+                        }
 
+                    }
                 }
-
             }
         },
         content = {
+            if (details.value.comment==null&&details.value.isError.isNotBlank()){
+                NoInternetConnectionScreen {
+                    viewModel.OnEvent(DetailEvent.getComment)
+                    viewModel.OnEvent(DetailEvent.getdetails)
+                }
+            }
             Content(details,darktheme,showsheet)
 
             BackHandler(state.bottomSheetState.isExpanded) {

@@ -8,17 +8,28 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class MoviesDetailRepositoryImp @Inject constructor(private val Moviedetailapi:MovieDetailApi) {
-    fun getDetails(movieID:Int): Flow<Details> {
+class MoviesDetailRepositoryImp @Inject constructor(private val Moviedetailapi:MovieDetailApi):MoviesDetailRepository {
+    override fun getDetails(movieID:Int): Flow<Result<Details>> {
         return flow {
-           val responce= Moviedetailapi.GetMovieDetails(movieID)
-           emit(responce)
+            try {
+                val responce= Moviedetailapi.GetMovieDetails(movieID)
+                emit(Result.success(responce))
+            }catch (e:Exception){
+                emit(Result.failure(e))
+            }
+
         }
     }
-    fun getcomments(movieid:Int,page:Int):Flow<comment>{
+    override fun getcomments(movieid:Int,page:Int):Flow<Result<comment>>{
         return flow {
-            val responce=Moviedetailapi.GetMovieComments(movieid,page)
-            emit(responce)
+            try {
+                val responce=Moviedetailapi.GetMovieComments(movieid,page)
+                emit(Result.success(responce))
+            }catch (e:Exception){
+                emit(Result.failure(e))
+            }
+
+
         }
     }
 }

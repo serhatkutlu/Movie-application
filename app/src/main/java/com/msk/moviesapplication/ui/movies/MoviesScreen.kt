@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrowserNotSupported
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +16,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.msk.moviesapplication.Util.Sorting_data
 import com.msk.moviesapplication.ui.MainActivity.LastStates
+import com.msk.moviesapplication.ui.NoInternetConnection.NoInternetConnectionScreen
 import com.msk.moviesapplication.ui.Util.MoviesScreenRoute
 import com.msk.moviesapplication.ui.movies.components.Gridcontent
 import com.msk.moviesapplication.ui.movies.components.OrderSectionbutton
@@ -37,10 +39,10 @@ fun MoviesScreen(
        MoviesViewModel.SortingData.collect{
            if(lastStates.value==null){
                state.scrollToItem(0)
-               MoviesViewModel.resetmovies()
+               MoviesViewModel.OnEvent(MoviesEvent.resetMovies)
            }
            else{
-               MoviesViewModel.addLastMovies(lastStates.value!!)
+               MoviesViewModel.OnEvent(MoviesEvent.AddLastMovies(lastStates.value!!))
                lastStates.value=null
 
            }
@@ -82,11 +84,20 @@ fun mainContent(
             }
         }
         OrderSectionbutton(moviesState,MoviesViewModel,SortingData)
+        if (moviesState.value.movies==null&&moviesState.value.error.isNotBlank()){
+            NoInternetConnectionScreen {
+
+                MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.LoadNextPage)
+                MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.resetMovies)
+
+            }
+
+        }
         Box(modifier = Modifier.fillMaxSize()) {
             Gridcontent(state,moviesState,navController,MoviesViewModel, cardOnclick = cardOnclick)
-            if (moviesState.value.isLoading){
+            if (moviesState.value.isLoading||moviesState.value.error.isNotBlank()){
             Box(modifier=Modifier.fillMaxSize(0.2f).align(Alignment.Center)) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).fillMaxSize(), strokeWidth = 7.dp)
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).fillMaxSize(), strokeWidth = 7.dp)
             }
         }}
     }

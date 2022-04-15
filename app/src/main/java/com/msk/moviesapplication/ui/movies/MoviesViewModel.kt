@@ -18,6 +18,7 @@ import com.msk.moviesapplication.ui.MainActivity.LastStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.*
+import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,7 +26,6 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
 
 
 
-    //private val _SortingState:MutableState<Sorting_data> = mutableStateOf(Sorting_data(Sorting_Value.POPULARITY,genres(listOf())))
 
 
     private val _SortingData:MutableStateFlow<Sorting_data> = MutableStateFlow(Sorting_data(Sorting_Value.POPULARITY,mutableListOf()))
@@ -43,6 +43,7 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
     private var getGenreJob : Job? =null
 
     private var initialPageKey=1
+    private var currentPage=1
     private val paginator :DefaulthPaginator by lazy{
         DefaulthPaginator(
             initialKey = initialPageKey,
@@ -51,19 +52,10 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
                     return@DefaulthPaginator nextPage
                 }
                 GetMovies(sortingValue = SortingData.value,nextPage)
-
-                nextPage+1
+                currentPage
             }
         )
     }
-
-    init {
-        GetGenre()
-
-    }
-
-
-
 
     fun OnEvent(MoviesEvent:MoviesEvent){
         when(MoviesEvent){
@@ -105,22 +97,39 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
             is MoviesEvent.LoadNextPage->{
                 loadNextItems()
             }
+            is MoviesEvent.AddLastMovies->{
+                addLastMovies(MoviesEvent.lastStates)
+            }
+            is MoviesEvent.resetMovies->{
+                resetmovies()
+            }
         }
     }
 
     private fun GetMovies( sortingValue: Sorting_data,page:Int=1){
         getMovieJob?.cancel()
         _MoviesState.value=MoviesState.value.copy(isLoading = true)
+
         getMovieJob=MovieRepository.getMovies(sortingValue,page).onEach {
-            val movies=MoviesState.value.movies?.results ?: mutableListOf()
-            _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = (movies+it.results).toMutableList()) )
-            _MoviesState.value=MoviesState.value.copy(isLoading = false)
-            if (it.totalPages==page+1){
-                _MoviesState.value=MoviesState.value.copy(endReached = true)
+            it.onSuccess {
+                val movies=MoviesState.value.movies?.results ?: mutableListOf()
+                _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = (movies+it.results).toMutableList()) )
+                _MoviesState.value=MoviesState.value.copy(isLoading = false, error = "")
+                currentPage++
+                if (it.totalPages==page+1){
+                    _MoviesState.value=MoviesState.value.copy(endReached = true)
+                }
+
+            }
+            it.onFailure {
+                Log.d("hatalar",it.localizedMessage)
+                _MoviesState.value=MoviesState.value.copy(error = it.localizedMessage ?: "Exeption", isLoading = false)
             }
 
 
         }.launchIn(viewModelScope)
+
+
 
     }
 
@@ -128,17 +137,24 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
         getGenreJob?.cancel()
 
         getGenreJob=MovieRepository.getGenres().onEach {
-            Genres.value=it
+            it.onSuccess {
+                Genres.value=it
+            }
+
+
         }.launchIn(viewModelScope)
     }
 
-     fun resetmovies(){
+    private fun resetmovies(){
          _MoviesState.value=_MoviesState.value.copy(movies = null)
          paginator.reset()
          loadNextItems()
+         if (Genres.value.genres.isEmpty()){
+             GetGenre()
+         }
     }
 
-    fun addLastMovies(lastStates: LastStates) {
+   private fun addLastMovies(lastStates: LastStates) {
         _SortingData.value=lastStates.sortingData
         _MoviesState.value=lastStates.moviesState
         initialPageKey=lastStates.moviesState.movies?.page ?: 1

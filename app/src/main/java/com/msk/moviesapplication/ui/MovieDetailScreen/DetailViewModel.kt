@@ -29,6 +29,7 @@ class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDeta
 
     var movieId:Int?=null
 
+    private var currentPage=1
     val paginator=DefaulthPaginator(
         initialKey = 1,
         onRequest = {
@@ -41,7 +42,7 @@ class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDeta
             }
             else{
                 getComments(movieId = movieId!!, page = it)
-                it+1
+                currentPage
             }
 
         }
@@ -53,14 +54,12 @@ class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDeta
             is DetailEvent.getdetails->{
                 movieId?.let {
                     getDetails(movieId!!)
-                    Log.d("hatalar","detail")
 
                 }
             }
 
             is DetailEvent.getComment->{
                 viewModelScope.launch {
-                    Log.d("hatalar","comments")
                     paginator.loadNextItems()
 
                 }
@@ -73,24 +72,31 @@ class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDeta
      private fun getDetails( movieId: Int){
 
         MovieDetailRepo.getDetails(movieID =movieId ).onEach{
-            _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(details = it)
+            it.onSuccess {
+                _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(details = it, isError = "")
+            }
+            it.onFailure {
+                _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(isError =it.localizedMessage ?: "Exeption" )
+            }
         }.launchIn(viewModelScope)
     }
 
     private fun getComments( movieId: Int,page:Int){
         getCommentJob?.cancel()
-        _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(isLoading = true)
-
         getCommentJob= MovieDetailRepo.getcomments(movieid =movieId,page).onEach{
-
-            val results= MovieDetailStateflow.value.comment?.results ?: listOf()
-            _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(comment =it.copy(results = results + it.results  ))
-            _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(isLoading = false)
-
-            if (it.totalPages==it.page){
-                Log.d("hatalar","Finish")
-                _MovieDetailStateflow.value=_MovieDetailStateflow.value.copy(endReached = true)
+            it.onSuccess {
+                val results= MovieDetailStateflow.value.comment?.results ?: listOf()
+                _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(comment =it.copy(results = results + it.results  ), isError = "")
+                currentPage++
+                if (it.totalPages==it.page){
+                    _MovieDetailStateflow.value=_MovieDetailStateflow.value.copy(endReached = true)
+                }
             }
+            it.onFailure {
+                _MovieDetailStateflow.value=MovieDetailStateflow.value.copy(isError =it.localizedMessage ?: "Exeption" )
+            }
+
+
         }.launchIn(viewModelScope)
     }
 

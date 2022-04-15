@@ -8,5 +8,6 @@ data class MovieDetailState(
     val comment: comment? = null,
     val details: Details?=null,
     var endReached:Boolean=false,
-    var isLoading:Boolean=false
+    var isLoading:Boolean=false,
+    var isError:String=""
 )

@@ -31,7 +31,6 @@ import kotlin.random.Random
 
 @Composable
 fun DetailText(details: State<MovieDetailState>, darktheme: State<Boolean>, showsheet: () -> Unit) {
-    //val color=if (darktheme.value) Color(0xFF252727) else Color(0xFFe4e4e2)
     details.value.details?.let {
         Card(shape = RoundedCornerShape(35.dp)) {
             val randomColors:MutableList<Color> = remember {
