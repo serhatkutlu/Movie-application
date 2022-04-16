@@ -53,7 +53,10 @@ class MoviesViewModel @Inject constructor(private val MovieRepository: MovieRepo
         when(MoviesEvent){
             is MoviesEvent.OrderSection->{
                 if (SortingData.value.Sorting_value==MoviesEvent.sortingData.Sorting_value){
-                    if (MoviesEvent.sortingData.Genre.isEmpty()) return
+                    if (MoviesEvent.sortingData.Genre.isEmpty()) {
+                        return
+
+                    }
 
                     val genre=MoviesEvent.sortingData.Genre[0]
 
