@@ -1,5 +1,9 @@
 package com.msk.moviesapplication.Di
 
+import com.msk.moviesapplication.Repository.DetailScreen.MoviesDetailRepository
+import com.msk.moviesapplication.Repository.DetailScreen.MoviesDetailRepositoryImp
+import com.msk.moviesapplication.Repository.MovieScreen.MovieRepository
+import com.msk.moviesapplication.Repository.MovieScreen.MovieRepositoryImp
 import com.msk.moviesapplication.Util.Constants.URL
 import com.msk.moviesapplication.api.Util.apiInterceptor
 import com.msk.moviesapplication.api.MovieApi
@@ -48,9 +52,22 @@ object MovieModule {
     fun provideMovieApi(retrofit: Retrofit):MovieApi{
         return retrofit.create(MovieApi::class.java)
     }
+
+
     @Provides
     @Singleton
     fun provideMovieDetailApi(retrofit: Retrofit):MovieDetailApi{
         return retrofit.create(MovieDetailApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMovieRepository(api:MovieApi):MovieRepository{
+        return MovieRepositoryImp(api)
+    }
+    @Provides
+    @Singleton
+    fun provideMovieDetailRepository(api:MovieDetailApi):MoviesDetailRepository{
+        return MoviesDetailRepositoryImp(api)
     }
 }

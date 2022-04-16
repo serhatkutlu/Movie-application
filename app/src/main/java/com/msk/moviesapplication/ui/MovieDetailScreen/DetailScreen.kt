@@ -28,9 +28,8 @@ fun DetailScreen(navController: NavController, Movieid: Int, darktheme: State<Bo
     val viewModel=hiltViewModel<DetailViewModel>()
     val details=viewModel.MovieDetailStateflow.collectAsState()
     LaunchedEffect(true) {
-        viewModel.movieId=Movieid
-        viewModel.OnEvent(DetailEvent.getdetails)
-        viewModel.OnEvent(DetailEvent.getComment)
+        viewModel.OnEvent(DetailEvent.getdetails(Movieid))
+        viewModel.OnEvent(DetailEvent.getComment(Movieid))
     }
 
     BottomSheet(navController,details,darktheme,viewModel)
@@ -64,7 +63,7 @@ fun BottomSheet(
                 Divider(Modifier.width(100.dp).height(5.dp).align(Alignment.CenterHorizontally).offset(y = -20.dp) , color = dividerColor)
                 if (details.value.isError.isNotBlank()){
                     NoInternetConnectionScreen {
-                        viewModel.OnEvent(DetailEvent.getComment)
+                        viewModel.OnEvent(DetailEvent.getComment())
                     }
                 }else {
                     LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
@@ -72,7 +71,7 @@ fun BottomSheet(
                             items(results.size) { item ->
                                 details.value.also {
                                     if (it.isLoading == false && it.endReached == false && results.size - 1 <= item) {
-                                        viewModel.OnEvent(DetailEvent.getComment)
+                                        viewModel.OnEvent(DetailEvent.getComment())
                                     }
                                 }
                                 commentBox(results[item], 100)
@@ -86,8 +85,8 @@ fun BottomSheet(
         content = {
             if (details.value.comment==null&&details.value.isError.isNotBlank()){
                 NoInternetConnectionScreen {
-                    viewModel.OnEvent(DetailEvent.getComment)
-                    viewModel.OnEvent(DetailEvent.getdetails)
+                    viewModel.OnEvent(DetailEvent.getComment())
+                    viewModel.OnEvent(DetailEvent.getdetails())
                 }
             }
             Content(details,darktheme,showsheet)

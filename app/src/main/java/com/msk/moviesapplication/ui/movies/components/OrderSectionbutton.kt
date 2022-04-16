@@ -37,7 +37,7 @@ import com.msk.moviesapplication.ui.movies.MoviesViewModel
         exit = fadeOut() + slideOutVertically()
     )
     {
-        val genres= remember { MoviesViewModel.Genres }
+        val genres= remember { MoviesViewModel.AllGenres }
         Column() {
 
             Column {

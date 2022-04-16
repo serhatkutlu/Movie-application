@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.msk.moviesapplication.Pagination.DefaulthPaginator
+import com.msk.moviesapplication.Repository.DetailScreen.MoviesDetailRepository
 import com.msk.moviesapplication.Repository.DetailScreen.MoviesDetailRepositoryImp
 import com.msk.moviesapplication.Repository.MovieScreen.MovieRepositoryImp
 import com.msk.moviesapplication.Responces.Data.Getdetail.Details
@@ -18,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDetailRepositoryImp) :ViewModel(){
+class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDetailRepository) :ViewModel(){
 
     private val _MovieDetailStateflow:MutableStateFlow<MovieDetailState> = MutableStateFlow(
         MovieDetailState()
@@ -27,10 +28,10 @@ class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDeta
 
     private var getCommentJob: Job?=null
 
-    var movieId:Int?=null
+    private var movieId:Int?=null
 
     private var currentPage=1
-    val paginator=DefaulthPaginator(
+    private val paginator=DefaulthPaginator(
         initialKey = 1,
         onRequest = {
             if (getCommentJob?.isActive ?: false){
@@ -52,14 +53,14 @@ class DetailViewModel @Inject constructor(private val MovieDetailRepo:MoviesDeta
     fun OnEvent(event: DetailEvent){
         when(event){
             is DetailEvent.getdetails->{
-                movieId?.let {
-                    getDetails(movieId!!)
-
-                }
+                if (event.movieid!=null) movieId=event.movieid
+                getDetails(movieId!!)
             }
 
             is DetailEvent.getComment->{
                 viewModelScope.launch {
+                    if (event.movieid!=null) movieId=event.movieid
+
                     paginator.loadNextItems()
 
                 }

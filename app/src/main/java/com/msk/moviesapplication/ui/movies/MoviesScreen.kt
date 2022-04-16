@@ -1,12 +1,10 @@
 package com.msk.moviesapplication.ui.movies
 
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrowserNotSupported
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,7 +28,7 @@ fun MoviesScreen(
 ){
     val scaffoldState= rememberScaffoldState()
     val MoviesViewModel= hiltViewModel<MoviesViewModel>()
-    val moviesState=MoviesViewModel.MoviesState
+    val moviesState=MoviesViewModel.MoviesState.collectAsState()
     val state= rememberLazyListState()
     val Sorting_data=MoviesViewModel.SortingData.collectAsState()
 
@@ -59,7 +57,7 @@ fun MoviesScreen(
         }}
         , content = { mainContent(state,moviesState,navController,MoviesViewModel,Sorting_data){
             lastStates.value= LastStates(moviesState = moviesState.value, sortingData = Sorting_data.value)
-            navController.navigate(MoviesScreenRoute.MoviesDetail.route+"?movieid=$it")
+            MoviesViewModel.OnEvent(MoviesEvent = MoviesEvent.openDetailScreen(navController,it))
         }
         }   
     )

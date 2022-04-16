@@ -1,43 +1,35 @@
 package com.msk.moviesapplication.ui.movies
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.msk.moviesapplication.Pagination.DefaulthPaginator
-import com.msk.moviesapplication.Repository.MovieScreen.MovieRepositoryImp
-import com.msk.moviesapplication.Responces.Data.Discover.Movies
+import com.msk.moviesapplication.Repository.MovieScreen.MovieRepository
 import com.msk.moviesapplication.Responces.Data.genre.Genre
 import com.msk.moviesapplication.Responces.Data.genre.genres
 import com.msk.moviesapplication.Util.Sorting_Value
 import com.msk.moviesapplication.Util.Sorting_data
-import com.msk.moviesapplication.api.MovieApi
 import com.msk.moviesapplication.ui.MainActivity.LastStates
+import com.msk.moviesapplication.ui.Util.MoviesScreenRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.*
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
-class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryImp):ViewModel() {
-
-
-
-
+class MoviesViewModel @Inject constructor(private val MovieRepository: MovieRepository):ViewModel() {
 
     private val _SortingData:MutableStateFlow<Sorting_data> = MutableStateFlow(Sorting_data(Sorting_Value.POPULARITY,mutableListOf()))
     val SortingData:StateFlow<Sorting_data> = _SortingData
 
 
 
-    private val _MoviesState= mutableStateOf(MoviesState())
-    val MoviesState:State<MoviesState> =_MoviesState
+    private val _MoviesState= MutableStateFlow(MoviesState())
+    val MoviesState:StateFlow<MoviesState> =_MoviesState
 
 
-    val Genres:MutableState<genres> = mutableStateOf(genres(mutableListOf()))
+    val _AllGenres:MutableStateFlow<genres> = MutableStateFlow(genres(mutableListOf()))
+    val AllGenres:StateFlow<genres> =_AllGenres
 
     private var getMovieJob : Job? =null
     private var getGenreJob : Job? =null
@@ -92,6 +84,9 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
                 _MoviesState.value=MoviesState.value.copy(isOrderSectionVisible = !MoviesState.value.isOrderSectionVisible)
             }
             is MoviesEvent.openDetailScreen->{
+                val navController=MoviesEvent.navController
+                val movieid=MoviesEvent.movieId
+                navController.navigate(MoviesScreenRoute.MoviesDetail.route+"?movieid=$movieid")
 
             }
             is MoviesEvent.LoadNextPage->{
@@ -116,13 +111,12 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
                 _MoviesState.value=MoviesState.value.copy(movies =it.copy(results = (movies+it.results).toMutableList()) )
                 _MoviesState.value=MoviesState.value.copy(isLoading = false, error = "")
                 currentPage++
-                if (it.totalPages==page+1){
+                if (it.totalPages==page){
                     _MoviesState.value=MoviesState.value.copy(endReached = true)
                 }
 
             }
             it.onFailure {
-                Log.d("hatalar",it.localizedMessage)
                 _MoviesState.value=MoviesState.value.copy(error = it.localizedMessage ?: "Exeption", isLoading = false)
             }
 
@@ -138,7 +132,7 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
 
         getGenreJob=MovieRepository.getGenres().onEach {
             it.onSuccess {
-                Genres.value=it
+                _AllGenres.value=it
             }
 
 
@@ -146,10 +140,11 @@ class MoviesViewModel @Inject constructor(val MovieRepository: MovieRepositoryIm
     }
 
     private fun resetmovies(){
-         _MoviesState.value=_MoviesState.value.copy(movies = null)
-         paginator.reset()
-         loadNextItems()
-         if (Genres.value.genres.isEmpty()){
+        _MoviesState.value=_MoviesState.value.copy(movies = null)
+        paginator.reset()
+        currentPage=1
+        loadNextItems()
+         if (AllGenres.value.genres.isEmpty()){
              GetGenre()
          }
     }
