@@ -1,10 +1,12 @@
 package com.msk.moviesapplication.ui.movies
 
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,7 +80,13 @@ fun mainContent(
 
         Box(Modifier.fillMaxWidth()){
             IconButton(modifier = Modifier.size(40.dp).fillMaxWidth().align(Alignment.CenterEnd), onClick =orderSectionClick){
-                Icon(Icons.Default.Sort,contentDescription = "Sort", modifier = Modifier.size(30.dp))
+                if(moviesState.value.isOrderSectionVisible){
+                    Icon(Icons.Default.Close,contentDescription = "close", modifier = Modifier.size(30.dp))
+                    BackHandler(true, onBack = orderSectionClick)
+                }
+                else  Icon(Icons.Default.Sort,contentDescription = "Sort", modifier = Modifier.size(30.dp))
+
+
             }
         }
         OrderSectionbutton(moviesState,MoviesViewModel,SortingData)
