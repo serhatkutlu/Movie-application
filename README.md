@@ -15,6 +15,9 @@ Movie application I made using jetpack compose
 * Coroutine
 
 
+[GOOGLE PLAY STORE](https://play.google.com/store/apps/details?id=com.msk.moviesapplication)
+
+
 # SCREENSHOT
 ![Ekran görüntüsü 2022-04-16 191419](https://user-images.githubusercontent.com/84921644/163682913-df39479d-9e1a-49f1-adba-15fd826b57e3.png)
 ![Ekran görüntüsü 2022-04-16 191443](https://user-images.githubusercontent.com/84921644/163682914-3f793a9a-9f62-4c69-82d8-dc65ff7e1ce4.png)
